@@ -8,6 +8,13 @@ type InputFormProps = {
   onClearEdit: () => void;
 };
 
+const formFields = [
+  { name: "name", placeholder: "Name", type: "text" },
+  { name: "email", placeholder: "Email", type: "text" },
+  { name: "phone", placeholder: "Phone", type: "text" },
+  { name: "address", placeholder: "Address", type: "text" },
+];
+
 function InputForm({ onSaveCard, editingCard, onClearEdit }: InputFormProps) {
   const [formData, setFormData] = useState({
     name: "",
@@ -62,34 +69,18 @@ function InputForm({ onSaveCard, editingCard, onClearEdit }: InputFormProps) {
       onSubmit={handleSubmit}
       className="bg-slate-800 flex flex-col mx-auto my-5 justify-center p-4 rounded-md md:w-2xl"
     >
-      <input
-        type="text"
-        placeholder="Name"
-        className="my-3 bg-slate-900 p-3 rounded-md text-white"
-        onChange={handleChange}
-        value={formData.name}
-      />
-      <input
-        type="text"
-        placeholder="Email"
-        className="my-3 bg-slate-900 p-3 rounded-md text-white"
-        onChange={handleChange}
-        value={formData.email}
-      />
-      <input
-        type="text"
-        placeholder="Phone"
-        className="my-3 bg-slate-900 p-3 rounded-md text-white"
-        onChange={handleChange}
-        value={formData.phone}
-      />
-      <input
-        type="text"
-        placeholder="Address"
-        className="my-3 bg-slate-900 p-3 rounded-md text-white"
-        onChange={handleChange}
-        value={formData.address}
-      />
+      {formFields.map((field) => (
+        <input
+          key={field.name}
+          type={field.type}
+          name={field.name}
+          placeholder={field.placeholder}
+          className="my-3 bg-slate-900 p-3 rounded-md text-white"
+          onChange={handleChange}
+          value={formData[field.name as keyof typeof formData]}
+        />
+      ))}
+
       {error && <p className="text-red-500 text-sm">{error}</p>}
       <button
         type="submit"
