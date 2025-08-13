@@ -1,89 +1,70 @@
-// Form.tsx
 import { useState, useEffect } from "react";
 import Card from "./card";
+import InputForm from "./InputForm.tsx";
 
 type CardData = {
   id: string;
   name: string;
   email: string;
+  phone: string;
+  address: string;
 };
 
 function Form() {
-  const [inputName, setInputName] = useState("");
-  const [inputEmail, setInputEmail] = useState("");
-
   const [cards, setCards] = useState<CardData[]>(() => {
     const savedCards = localStorage.getItem("cards");
     return savedCards ? JSON.parse(savedCards) : [];
   });
+  const [editingCard, setEditingCard] = useState<CardData | null>(null);
 
   useEffect(() => {
     localStorage.setItem("cards", JSON.stringify(cards));
   }, [cards]);
 
-  const NameUpdater = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputName(e.target.value);
-  };
-
-  const EmailUpdater = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputEmail(e.target.value);
-  };
-
-  const submitHandler = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (inputName && inputEmail) {
+  const handleSaveCard = (cardToSave: CardData) => {
+    if (editingCard) {
+      setCards((prevCards) =>
+        prevCards.map((card) => (card.id === cardToSave.id ? cardToSave : card))
+      );
+      setEditingCard(null);
+    } else {
       const newCard = {
+        ...cardToSave,
         id: Date.now().toString(),
-        name: inputName,
-        email: inputEmail,
       };
       setCards([...cards, newCard]);
-      setInputName("");
-      setInputEmail("");
     }
   };
 
-  // تابع جدید برای حذف یک کارت با استفاده از id
   const removeCard = (idToRemove: string) => {
     const newCards = cards.filter((card) => card.id !== idToRemove);
     setCards(newCards);
   };
 
+  const editCard = (idToEdit: string) => {
+    const cardToEdit = cards.find((card) => card.id === idToEdit);
+    if (cardToEdit) {
+      setEditingCard(cardToEdit);
+    }
+  };
+
   return (
     <>
-      <form
-        onSubmit={submitHandler}
-        className="bg-slate-800 flex flex-col mx-auto my-5 justify-center p-4 rounded-md md:w-2xl"
-      >
-        <input
-          type="text"
-          placeholder="نام"
-          className="my-3 bg-slate-900 p-3 rounded-md text-white"
-          onChange={NameUpdater}
-          value={inputName}
-        />
-        <input
-          type="email"
-          placeholder="ایمیل"
-          className="my-3 bg-slate-900 p-3 rounded-md text-white"
-          onChange={EmailUpdater}
-          value={inputEmail}
-        />
-        <button
-          type="submit"
-          className="bg-slate-600 text-gray-200 p-3 text-xl rounded-md my-3"
-        >
-          تایید
-        </button>
-      </form>
+      <InputForm
+        onSaveCard={handleSaveCard}
+        editingCard={editingCard}
+        onClearEdit={() => setEditingCard(null)}
+      />
 
       {cards.map((card) => (
         <Card
           key={card.id}
           name={card.name}
           email={card.email}
+          phone={card.phone}
+          address={card.address}
           onRemove={() => removeCard(card.id)}
+          onEdit={() => editCard(card.id)}
         />
       ))}
     </>
