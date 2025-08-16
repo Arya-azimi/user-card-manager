@@ -1,74 +1,65 @@
-import { useState, useEffect } from "react";
-import Card from "./card";
-import InputForm from "./InputForm.tsx";
+import { AddressInput, EmailInput, PhoneInput, TextInput } from "./input";
+import { generateRandomId } from "../utils";
+import type { CardData } from "../types";
+import { useInput } from "../hooks";
 
-type CardData = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-};
+interface FormProps {
+  onCardAdd: (card: CardData) => void;
+}
 
-function Form() {
-  const [cards, setCards] = useState<CardData[]>(() => {
-    const savedCards = localStorage.getItem("cards");
-    return savedCards ? JSON.parse(savedCards) : [];
-  });
-  const [editingCard, setEditingCard] = useState<CardData | null>(null);
+function Form({ onCardAdd }: FormProps) {
+  const [name, setName, onNameChange] = useInput();
+  const [email, setEmail, onEmailChange] = useInput();
+  const [phone, setPhone, onPhoneChange] = useInput();
+  const [address, setAddress, onAddressChange] = useInput();
 
-  useEffect(() => {
-    localStorage.setItem("cards", JSON.stringify(cards));
-  }, [cards]);
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const handleSaveCard = (cardToSave: CardData) => {
-    if (editingCard) {
-      setCards((prevCards) =>
-        prevCards.map((card) => (card.id === cardToSave.id ? cardToSave : card))
-      );
-      setEditingCard(null);
-    } else {
+    if (name && email && phone && address) {
       const newCard = {
-        ...cardToSave,
-        id: Date.now().toString(),
+        id: generateRandomId(),
+        name,
+        email,
+        phone,
+        address,
       };
-      setCards([...cards, newCard]);
-    }
-  };
 
-  const removeCard = (idToRemove: string) => {
-    const newCards = cards.filter((card) => card.id !== idToRemove);
-    setCards(newCards);
-  };
+      onCardAdd(newCard);
 
-  const editCard = (idToEdit: string) => {
-    const cardToEdit = cards.find((card) => card.id === idToEdit);
-    if (cardToEdit) {
-      setEditingCard(cardToEdit);
+      setName("");
+      setEmail("");
+      setPhone("");
+      setAddress("");
     }
   };
 
   return (
-    <>
-      <InputForm
-        onSaveCard={handleSaveCard}
-        editingCard={editingCard}
-        onClearEdit={() => setEditingCard(null)}
+    <form
+      onSubmit={handleFormSubmit}
+      className="bg-slate-800 flex flex-col mx-auto my-5 justify-center p-4 rounded-md md:w-2xl"
+    >
+      <TextInput placeholder="نام" value={name} onChange={onNameChange} />
+      <EmailInput placeholder="ایمیل" value={email} onChange={onEmailChange} />
+      <PhoneInput
+        placeholder="شماره تماس"
+        value={phone}
+        onChange={onPhoneChange}
+      />
+      <AddressInput
+        placeholder="آدرس"
+        value={address}
+        onChange={onAddressChange}
       />
 
-      {cards.map((card) => (
-        <Card
-          key={card.id}
-          name={card.name}
-          email={card.email}
-          phone={card.phone}
-          address={card.address}
-          onRemove={() => removeCard(card.id)}
-          onEdit={() => editCard(card.id)}
-        />
-      ))}
-    </>
+      <button
+        type="submit"
+        className="bg-slate-600 text-gray-200 p-3 text-xl rounded-md my-3"
+      >
+        تایید
+      </button>
+    </form>
   );
 }
 
-export default Form;
+export { Form };

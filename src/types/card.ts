@@ -1,9 +1,8 @@
-type CardData = {
+interface CardData {
   id: string;
   name: string;
   email: string;
   phone: string;
   address: string;
-};
-
-export { CardData };
+}
+export type { CardData };
